@@ -9,18 +9,25 @@ MQTT_PORT = 1883
 MQTT_KEEPALIVE_INTERVAL = 45
 MQTT_TOPIC = "v1/weatherstation/data"
 
+print("Weather Station Data Collector - Starting")
+print ("MQTT Broker: " + MQTT_HOST + ":" + str(MQTT_PORT))
 # Define on_publish event function
 def on_publish(client, userdata, mid):
     print("Message Published...")
 
 # Initiate MQTT Client
+print("Initiating MQTT Client")
 mqttc = mqtt.Client()
+mqttc.on_publish = on_publish
 # Connect with MQTT Broker
+print("Connecting to MQTT Broker...")
 mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
 
 # Configure weatherhat
+print("Configuring WeatherHAT")
 sensor = weatherhat.WeatherHAT()
 
+print("Startup Complete - Running")
 while True:
     sensor.update(interval=5.0)
     # Read sensor data
