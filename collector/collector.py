@@ -19,10 +19,10 @@ mqttc = mqtt.Client()
 mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
 
 # Configure weatherhat
-sensor = weatherhat.WeatherHat()
-sensor.update(interval=5.0)
+sensor = weatherhat.WeatherHAT()
 
 while True:
+    sensor.update(interval=5.0)
     # Read sensor data
     data = {
         "sys_temperature": sensor.device_temperature, # celsius
