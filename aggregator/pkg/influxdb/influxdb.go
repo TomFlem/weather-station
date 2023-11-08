@@ -1,6 +1,7 @@
 package influxdb
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -10,12 +11,14 @@ import (
 const (
 	pingAPI  = "/ping"
 	writeAPI = "/write"
+	queryAPI = "/query"
 	dbName   = "weather"
 )
 
 type AGInfluxDB interface {
 	CheckConnection() error
 	WriteData(data []byte) error
+	CreateDB(name string) error
 }
 
 type AGInfluxDBClient struct {
@@ -58,7 +61,24 @@ func (c *AGInfluxDBClient) WriteData(data []byte) error {
 		return err
 	}
 	if resp.StatusCode() != http.StatusNoContent {
+		return fmt.Errorf("InfluxDB write error - %s", resp.Status())
+	}
+
+	return nil
+}
+
+func (c *AGInfluxDBClient) CreateDB(name string) error {
+	params := make(map[string]string)
+	params["q"] = fmt.Sprintf(`CREATE DATABASE "%s"`, dbName)
+	resp, err := c.client.R().
+		SetHeader("Content-Type", "application/octet-stream").
+		SetQueryParams(params).
+		Post(queryAPI)
+	if err != nil {
 		return err
+	}
+	if resp.StatusCode() != http.StatusOK {
+		return fmt.Errorf("InfluxDB write error - %s", resp.Status())
 	}
 	return nil
 }

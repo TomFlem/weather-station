@@ -24,7 +24,7 @@ type AGMQTTClient struct {
 	mu     sync.RWMutex
 }
 
-func NewAMQTTClient() *AGMQTTClient {
+func NewAGMQTTClient() *AGMQTTClient {
 	return &AGMQTTClient{}
 }
 

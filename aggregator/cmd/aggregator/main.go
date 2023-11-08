@@ -5,19 +5,25 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/TomFlem/weather-station/aggregator/internal/translate"
 	"github.com/TomFlem/weather-station/aggregator/pkg/influxdb"
 	amqtt "github.com/TomFlem/weather-station/aggregator/pkg/mqtt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-func cleanup() {
+const (
+	dataTopic = "v1/weatherstation/data"
+)
 
+func cleanup() {
 }
+
 func main() {
 	fmt.Println("Starting Aggregator")
 
-	mqttClient := amqtt.NewAMQTTClient()
+	mqttClient := amqtt.NewAGMQTTClient()
 	opts := amqtt.ConnectionOptions{
 		BrokerScheme:  "tcp",
 		BrokerAddress: "localhost",
@@ -39,12 +45,31 @@ func main() {
 		os.Exit(1)
 	}
 
-	influxdbClient := influxdb.NewAGInfluxDBClient("username", "password", "url")
+	influxdbClient := influxdb.NewAGInfluxDBClient("admin", "admin", "http://localhost:8086")
 	influxdbConnErr := influxdbClient.CheckConnection()
 	if influxdbConnErr != nil {
-		fmt.Println("Error connecting to InfluxDB")
+		fmt.Printf("Error connecting to InfluxDB - %s\n", influxdbConnErr)
 		os.Exit(1)
 	}
+	createDBErr := influxdbClient.CreateDB("weather")
+	if createDBErr != nil {
+		fmt.Printf("Error creating InfluxDB database - %s\n", createDBErr)
+		os.Exit(1)
+	}
+
+	translator := translate.NewTranslator()
+
+	mqttClient.Subscribe(dataTopic, func(client mqtt.Client, msg mqtt.Message) {
+		//fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+		iData, transERr := translator.WSToInfluxDB(msg.Payload())
+		if transERr != nil {
+			fmt.Printf("Error translating data - %s\n", transERr)
+		}
+		influxdbErr := influxdbClient.WriteData([]byte(iData))
+		if influxdbErr != nil {
+			fmt.Printf("Error writing to InfluxDB - %s\n", influxdbErr)
+		}
+	})
 
 	// cleanup handler to quit when told to do so
 	ch := make(chan os.Signal, 1)
@@ -54,4 +79,8 @@ func main() {
 		cleanup()
 		os.Exit(1)
 	}()
+
+	for {
+		time.Sleep(time.Second * 5)
+	}
 }
