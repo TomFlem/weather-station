@@ -33,6 +33,7 @@ while True:
     sensor.update(interval=5.0)
     # Read sensor data
     data = {
+        "timestamp": time.time(),
         "sys_temperature": sensor.device_temperature, # celsius
         "temperature": sensor.temperature, # celsius
         "humidity": sensor.humidity, # %
