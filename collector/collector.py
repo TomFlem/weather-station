@@ -9,7 +9,7 @@ import weatherhat
 config = json.load(open("config.json"))
 # Start
 print("Weather Station Data Collector - Starting")
-print ("MQTT Broker: " + config['host'] + ":" + config['port'])
+print ("MQTT Broker: " + config['host'] + ":" + str(config['port']))
 
 # Define on_publish event function
 def on_publish(client, userdata, mid):
