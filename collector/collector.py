@@ -4,25 +4,33 @@ import json
 import weatherhat
 
 # MQTT setup
-MQTT_HOST = "10.0.0.41"
-MQTT_PORT = 1883
-MQTT_KEEPALIVE_INTERVAL = 45
-MQTT_TOPIC = "v1/weatherstation/data"
 
+# Load Config
+config = json.load(open("config.json"))
+# Start
 print("Weather Station Data Collector - Starting")
-print ("MQTT Broker: " + MQTT_HOST + ":" + str(MQTT_PORT))
+print ("MQTT Broker: " + config['host'] + ":" + config['port'])
+
 # Define on_publish event function
 def on_publish(client, userdata, mid):
-    print("Message Published...")
+    print("Weather data published on")
+def on_disconnect(client, userdata, rc):
+    if rc != 0:
+        print("Unexpected MQTT disconnection. Will auto-reconnect")
+def on_connect(client,userdata,flags,reasonCode,properties):
+    print("MQTT Client Connected")
 
 # Initiate MQTT Client
 print("Initiating MQTT Client")
-mqttc = mqtt.Client()
+mqttc = mqtt.Client("weather-collector", clean_session=True)
 mqttc.on_publish = on_publish
+mqttc.reconnect = 1
+mqttc.on_disconnect = on_disconnect
+mqttc.on_connect = on_connect
 # Connect with MQTT Broker
 print("Connecting to MQTT Broker...")
-mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
-
+mqttc.connect(config['host'], config['port'], config['keepalive'])
+mqttc.loop_start()
 # Configure weatherhat
 print("Configuring WeatherHAT")
 sensor = weatherhat.WeatherHAT()

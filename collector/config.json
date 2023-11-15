@@ -1,0 +1,7 @@
+
+{
+    "host": "10.0.0.41",
+    "port": 1883,
+    "keepalive": 45,
+    "weatherTopic": "v1/weatherstation/data"
+}
