@@ -13,7 +13,7 @@ print ("MQTT Broker: " + config['host'] + ":" + str(config['port']))
 
 # Define on_publish event function
 def on_publish(client, userdata, mid):
-    print("Weather data published on")
+    print("Weather data published on topic:" + config['weatherTopic'])
 
 # Initiate MQTT Client
 print("Initiating MQTT Client")
