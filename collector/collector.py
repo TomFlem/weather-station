@@ -14,18 +14,12 @@ print ("MQTT Broker: " + config['host'] + ":" + str(config['port']))
 # Define on_publish event function
 def on_publish(client, userdata, mid):
     print("Weather data published on")
-def on_disconnect(client, userdata, rc):
-    if rc != 0:
-        print("Unexpected MQTT disconnection. Will auto-reconnect")
-def on_connect(client,userdata,flags,reasonCode,properties):
-    print("MQTT Client Connected")
 
 # Initiate MQTT Client
 print("Initiating MQTT Client")
 mqttc = mqtt.Client("weather-collector", clean_session=True)
 mqttc.on_publish = on_publish
-mqttc.on_disconnect = on_disconnect
-mqttc.on_connect = on_connect
+
 # Connect with MQTT Broker
 print("Connecting to MQTT Broker...")
 mqttc.connect(config['host'], config['port'], config['keepalive'])
@@ -49,5 +43,5 @@ while True:
         "rain_tota": sensor.rain_total, # mm
         "rain": sensor.rain, # mm/sec
     }
-    mqttc.publish(MQTT_TOPIC, json.dumps(data))
+    mqttc.publish(config['weatherTopic'], json.dumps(data))
     time.sleep(5.0)
