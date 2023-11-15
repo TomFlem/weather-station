@@ -24,7 +24,6 @@ def on_connect(client,userdata,flags,reasonCode,properties):
 print("Initiating MQTT Client")
 mqttc = mqtt.Client("weather-collector", clean_session=True)
 mqttc.on_publish = on_publish
-mqttc.reconnect = 1
 mqttc.on_disconnect = on_disconnect
 mqttc.on_connect = on_connect
 # Connect with MQTT Broker
